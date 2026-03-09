@@ -96,6 +96,29 @@ class AuthService {
 		return user;
 	}
 
+	async verifyUserEmail(token) {
+		const payload = jwt.verify(token, authConfig.jwtSecret);
+
+		if (payload.exp < Date.now() / 1000) {
+			return [false, "Token has expired"];
+		}
+		const userId = payload.sub;
+		const user = await authModel.findUserById(userId);
+
+		// Check if user exists
+		if (!user) {
+			return [true, null];
+		}
+
+		if (user.verified_at) {
+			return [null, "Email already verified"];
+		}
+
+		await authModel.verifyUserEmail(userId);
+
+		return [null, "Email verified successfully"];
+	}
+
 	async blacklistToken(token) {
 		const decoded = jwt.decode(token);
 		const expiresAt = new Date(decoded.exp * 1000);

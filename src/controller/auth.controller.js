@@ -30,6 +30,14 @@ const login = async (req, res) => {
 	res.success(data);
 };
 
+const verifyEmail = async (req, res) => {
+	const token = req.body.token;
+	const [error, data] = await authService.verifyUserEmail(token);
+	if (error) return res.unauthorized();
+
+	res.success(data);
+};
+
 const logout = async (req, res) => {
 	const accessToken = req.headers?.authorization?.replace("Bearer", "").trim();
 
@@ -56,4 +64,4 @@ const getCurrentUser = (req, res) => {
 	res.success(req.auth.user);
 };
 
-module.exports = { register, login, getCurrentUser, refreshToken, logout };
+module.exports = { register, login, verifyEmail, getCurrentUser, refreshToken, logout };

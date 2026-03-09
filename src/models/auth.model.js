@@ -44,6 +44,11 @@ class AuthModel {
 		const [rows] = await pool.query("update refresh_token set isRevoked = 1 where id = ?", [refreshToken.id]);
 		return rows;
 	}
+
+	async verifyUserEmail(userId) {
+		const [rows] = await pool.query("update users set verified_at = NOW() where id = ?", [userId]);
+		return rows;
+	}
 }
 
 module.exports = new AuthModel();
