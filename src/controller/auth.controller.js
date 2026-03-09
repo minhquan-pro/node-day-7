@@ -38,6 +38,16 @@ const verifyEmail = async (req, res) => {
 	res.success(data);
 };
 
+const resendVerifyEmail = async (req, res) => {
+	const accessToken = req.headers?.authorization?.replace("Bearer", "").trim();
+	const user = req.auth.user;
+	if (!user) return res.unauthorized();
+
+	await emailService.sendVerifyEmail(user.email, accessToken);
+
+	res.success("Email verified successfully");
+};
+
 const logout = async (req, res) => {
 	const accessToken = req.headers?.authorization?.replace("Bearer", "").trim();
 
@@ -64,4 +74,4 @@ const getCurrentUser = (req, res) => {
 	res.success(req.auth.user);
 };
 
-module.exports = { register, login, verifyEmail, getCurrentUser, refreshToken, logout };
+module.exports = { register, login, verifyEmail, resendVerifyEmail, getCurrentUser, refreshToken, logout };
