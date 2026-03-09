@@ -1,15 +1,18 @@
 const authService = require("@/services/auth.service");
+const emailService = require("@/services/email.service");
 
 const register = async (req, res) => {
 	const { email, password } = req.body;
 	const userAgent = req.headers["user-agent"];
 
 	const [error, data] = await authService.handleRegister(email, password, userAgent);
-
 	if (error) {
 		res.unauthorized();
 		return;
 	}
+
+	const accessToken = data.accessToken;
+	await emailService.sendVerifyEmail(email, accessToken);
 
 	res.success(data);
 };
@@ -49,4 +52,8 @@ const refreshToken = async (req, res) => {
 	res.success(data);
 };
 
-module.exports = { register, login, refreshToken, logout };
+const getCurrentUser = (req, res) => {
+	res.success(req.auth.user);
+};
+
+module.exports = { register, login, getCurrentUser, refreshToken, logout };
