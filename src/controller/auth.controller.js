@@ -1,5 +1,6 @@
 const authService = require("@/services/auth.service");
 const emailService = require("@/services/email.service");
+const queueService = require("@/services/queue.service");
 
 const register = async (req, res) => {
 	const { email, password } = req.body;
@@ -10,11 +11,14 @@ const register = async (req, res) => {
 		res.unauthorized();
 		return;
 	}
+	const { userTokens, user } = data;
 
-	const accessToken = data.accessToken;
-	await emailService.sendVerifyEmail(email, accessToken);
+	await queueService.push({
+		type: "sendVerifyEmail",
+		payload: user,
+	});
 
-	res.success(data);
+	res.success(userTokens);
 };
 
 const login = async (req, res) => {
@@ -39,11 +43,13 @@ const verifyEmail = async (req, res) => {
 };
 
 const resendVerifyEmail = async (req, res) => {
-	const accessToken = req.headers?.authorization?.replace("Bearer", "").trim();
 	const user = req.auth.user;
 	if (!user) return res.unauthorized();
 
-	await emailService.sendVerifyEmail(user.email, accessToken);
+	await queueService.push({
+		type: "sendVerifyEmail",
+		payload: user,
+	});
 
 	res.success("Email verified successfully");
 };

@@ -1,10 +1,20 @@
+const jwt = require("jsonwebtoken");
 const transporter = require("@/config/nodeMailer");
+const authConfig = require("@/config/auth");
 
 class EmailService {
-	async sendVerifyEmail(email, token) {
+	async sendVerifyEmail(user) {
+		const token = jwt.sign(
+			{
+				sub: user.id,
+				exp: Date.now() / 1000 + authConfig.accessTokenTTL,
+			},
+			authConfig.jwtSecret,
+		);
+
 		const info = await transporter.sendMail({
 			from: '"" <hackall2939@gmail.com>',
-			to: email,
+			to: user.email,
 			subject: "Security Alert: Account Attack Detected",
 			text: "Your account has been targeted by a suspicious activity. Please review your account security immediately.",
 			html: `

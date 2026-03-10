@@ -12,10 +12,10 @@ class AuthService {
 		const hash = await bcrypt.hash(password, saltRounds);
 		const result = await authModel.register(email, hash);
 
-		const user = { id: result.insertId };
+		const user = await authModel.findUserById(result.insertId);
 		const userTokens = await this.generateUserToken(user, userAgent);
 
-		return [null, userTokens];
+		return [null, { userTokens, user }];
 	}
 
 	async handleLogin(email, password, userAgent) {
