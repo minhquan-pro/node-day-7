@@ -5,6 +5,7 @@ const authModel = require("@/models/auth.model");
 const authConfig = require("@/config/auth");
 const randomString = require("@/utils/randomString");
 const revokedTokenModel = require("@/models/revokedToken.model");
+const queueService = require("./queue.service");
 const saltRounds = 10;
 
 class AuthService {
@@ -138,6 +139,11 @@ class AuthService {
 
 		const affected = await authModel.updatedUserPassword(user.id, hashNewPass);
 		if (!affected) return [{ message: "Update failed" }, null];
+
+		await queueService.push({
+			type: "sendPasswordChangeEmail",
+			payload: user,
+		});
 
 		return [null, { message: "Password changed successfully" }];
 	}

@@ -14,22 +14,38 @@ const sleep = require("@/utils/sleep");
 			const type = pendingJob.type;
 			const payload = JSON.parse(pendingJob.payload);
 
-			switch (type) {
-				case "sendVerifyEmail":
-					try {
-						await queueModel.updateStatus(pendingJob.id, "inprogress");
+			if (type) {
+				try {
+					await queueModel.updateStatus(pendingJob.id, "inprogress");
 
-						const handler = tasksMap[type];
-						if (!handler) {
-							throw new Error("Handler for task type '" + type + "' not found");
-						}
-
-						await handler(payload);
-						await queueModel.updateStatus(pendingJob.id, "completed");
-					} catch (error) {
-						await queueModel.updateStatus(pendingJob.id, "failed");
+					const handler = tasksMap[type];
+					if (!handler) {
+						throw new Error("Handler for task type '" + type + "' not found");
 					}
+
+					await handler(payload);
+					await queueModel.updateStatus(pendingJob.id, "completed");
+				} catch (error) {
+					await queueModel.updateStatus(pendingJob.id, "failed");
+				}
 			}
+
+			// switch (type) {
+			// 	case "sendVerifyEmail":
+			// 		try {
+			// 			await queueModel.updateStatus(pendingJob.id, "inprogress");
+
+			// 			const handler = tasksMap[type];
+			// 			if (!handler) {
+			// 				throw new Error("Handler for task type '" + type + "' not found");
+			// 			}
+
+			// 			await handler(payload);
+			// 			await queueModel.updateStatus(pendingJob.id, "completed");
+			// 		} catch (error) {
+			// 			await queueModel.updateStatus(pendingJob.id, "failed");
+			// 		}
+			// }
 		}
 
 		await sleep(1000);
