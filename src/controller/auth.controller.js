@@ -76,8 +76,29 @@ const refreshToken = async (req, res) => {
 	res.success(data);
 };
 
+const changePassword = async (req, res) => {
+	const changePassData = req.body;
+
+	const [error, data] = await authService.handleChangePassword(changePassData, req.auth.user);
+
+	if (error) {
+		return res.error(error);
+	}
+
+	res.success(data);
+};
+
 const getCurrentUser = (req, res) => {
 	res.success(req.auth.user);
 };
 
-module.exports = { register, login, verifyEmail, resendVerifyEmail, getCurrentUser, refreshToken, logout };
+module.exports = {
+	register,
+	login,
+	verifyEmail,
+	resendVerifyEmail,
+	changePassword,
+	getCurrentUser,
+	refreshToken,
+	logout,
+};

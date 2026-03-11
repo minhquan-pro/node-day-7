@@ -119,6 +119,29 @@ class AuthService {
 		return [null, "Email verified successfully"];
 	}
 
+	async handleChangePassword(changePassData, user) {
+		const { currentPassword, newPassword, confirmPassword } = changePassData;
+
+		const userPassword = await authModel.getUserPasswordById(user.id);
+
+		const isCurrentPasswordValid = await bcrypt.compare(currentPassword, userPassword);
+
+		if (!isCurrentPasswordValid) {
+			return [{ message: "Current password is incorrect" }, null];
+		}
+
+		if (newPassword !== confirmPassword) {
+			return [{ message: "Passwords do not match" }, null];
+		}
+
+		const hashNewPass = await bcrypt.hash(newPassword, saltRounds);
+
+		const affected = await authModel.updatedUserPassword(user.id, hashNewPass);
+		if (!affected) return [{ message: "Update failed" }, null];
+
+		return [null, { message: "Password changed successfully" }];
+	}
+
 	async blacklistToken(token) {
 		const decoded = jwt.decode(token);
 		const expiresAt = new Date(decoded.exp * 1000);

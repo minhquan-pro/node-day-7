@@ -40,6 +40,11 @@ class AuthModel {
 		return rows[0];
 	}
 
+	async updatedUserPassword(id, password) {
+		const [{ affectedRows }] = await pool.query("update users set password = ? where id = ?", [password, id]);
+		return affectedRows;
+	}
+
 	async updatedRefreshToken(refreshToken) {
 		const [rows] = await pool.query("update refresh_token set isRevoked = 1 where id = ?", [refreshToken.id]);
 		return rows;
@@ -48,6 +53,12 @@ class AuthModel {
 	async verifyUserEmail(userId) {
 		const [rows] = await pool.query("update users set verified_at = NOW() where id = ?", [userId]);
 		return rows;
+	}
+
+	async getUserPasswordById(id) {
+		const query = "select password from users where id = ?";
+		const [rows] = await pool.query(query, [id]);
+		return rows[0].password;
 	}
 }
 
